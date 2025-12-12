@@ -82,7 +82,7 @@ export default function MarketingPage() {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-base">
-                Productos que aparecen como 'Out of Stock' vuelven a estar a la venta
+                Productos que aparecen como &apos;Out of Stock&apos; vuelven a estar a la venta
               </CardDescription>
             </CardContent>
           </Card>

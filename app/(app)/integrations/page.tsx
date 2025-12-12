@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -25,11 +25,7 @@ export default function IntegrationsPage() {
   const [lastSync, setLastSync] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
 
-  useEffect(() => {
-    loadConnectionStatus()
-  }, [])
-
-  const loadConnectionStatus = async () => {
+  const loadConnectionStatus = useCallback(async () => {
     try {
       if (!user || !user.id) {
         router.push('/sign-in')
@@ -74,7 +70,11 @@ export default function IntegrationsPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [user, router, supabase])
+
+  useEffect(() => {
+    loadConnectionStatus()
+  }, [loadConnectionStatus])
 
   const handleConnect = async () => {
     if (!userId) return
