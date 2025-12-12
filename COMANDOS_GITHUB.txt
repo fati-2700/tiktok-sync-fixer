@@ -1,0 +1,28 @@
+===========================================
+COMANDOS PARA CREAR REPOSITORIO EN GITHUB
+===========================================
+
+PASO 1: Inicializar Git (ejecuta en PowerShell)
+-------------------------------------------------
+git init
+git branch -M main
+git add .
+git commit -m "Initial commit: TikTok Sync Fixer MVP"
+
+PASO 2: Crear repositorio en GitHub
+-------------------------------------------------
+1. Ve a: https://github.com/new
+2. Nombre: tiktok-sync-fixer
+3. NO marques nada (README, .gitignore, license)
+4. Clic en "Create repository"
+
+PASO 3: Conectar y subir código
+-------------------------------------------------
+(Reemplaza TU-USUARIO con tu usuario de GitHub)
+
+git remote add origin https://github.com/TU-USUARIO/tiktok-sync-fixer.git
+git push -u origin main
+
+Si te pide autenticación, usa un Personal Access Token (no tu contraseña)
+===========================================
+
