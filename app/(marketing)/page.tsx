@@ -2,6 +2,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+export const dynamic = 'force-dynamic'
+
 export default function MarketingPage() {
   return (
     <div className="min-h-screen flex flex-col">
