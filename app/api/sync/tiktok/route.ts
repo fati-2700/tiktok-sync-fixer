@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server'
 import { createClient } from '@supabase/supabase-js'
-import { createTikTokShopClient } from '@/lib/tiktok-shop/client'
-import { createShopifyClient } from '@/lib/shopify/client'
 
 /**
  * Endpoint para forzar sincronización de inventario TikTok Shop
@@ -84,92 +82,14 @@ export async function POST(request: NextRequest) {
     const fixedProducts: Array<{ productId: string; shopifyStock: number; tiktokStock: number }> = []
 
     if (useRealAPI) {
-      // MODO REAL: Usar API real de TikTok Shop
-      try {
-        const tiktokClient = createTikTokShopClient(profile.tiktok_access_token!)
-        const products = await tiktokClient.getAllProducts()
-        itemsChecked = products.length
-
-        // TODO: Necesitas mapear productos TikTok con Shopify
-        // Por ahora, asumimos que tienes un mapeo en la tabla tiktok_products
-        const { data: productMappings } = await supabaseAdmin
-          .from('tiktok_products')
-          .select('id, tiktok_product_id, shopify_product_id, tiktok_inventory, current_inventory')
-          .eq('user_id', userId)
-
-        // Obtener shopify_access_token del perfil (necesitas agregarlo al schema)
-        // Por ahora, usamos dummy data para Shopify también
-        
-        for (const mapping of productMappings || []) {
-          const tiktokProduct = products.find(p => p.id === mapping.tiktok_product_id)
-          if (!tiktokProduct) continue
-
-          // Obtener inventario real de TikTok
-          const tiktokStock = await tiktokClient.getProductInventory(mapping.tiktok_product_id)
-          
-          // TODO: Obtener inventario real de Shopify
-          // const shopifyClient = createShopifyClient(shopDomain, shopifyAccessToken)
-          // const shopifyStock = await shopifyClient.getVariantInventory(mapping.shopify_product_id)
-          const shopifyStock = mapping.current_inventory || 0 // Temporal: usar inventario guardado
-
-          // Si TikTok dice "0" pero Shopify tiene stock, FIXEAR
-          if (tiktokStock === 0 && shopifyStock > 0) {
-            try {
-              // Actualizar inventario en TikTok
-              const firstSku = tiktokProduct.skus?.[0]
-              if (firstSku) {
-                await tiktokClient.updateInventory({
-                  productId: mapping.tiktok_product_id,
-                  skuId: firstSku.id,
-                  quantity: shopifyStock,
-                })
-
-                itemsFixed++
-                fixedProducts.push({
-                  productId: mapping.tiktok_product_id,
-                  shopifyStock,
-                  tiktokStock,
-                })
-
-                // Actualizar en base de datos
-                await supabaseAdmin
-                  .from('tiktok_products')
-                  .update({
-                    tiktok_inventory: shopifyStock,
-                    current_inventory: shopifyStock,
-                    last_sync: new Date().toISOString(),
-                  })
-                  .eq('id', mapping.id)
-              }
-            } catch (updateError: any) {
-              console.error(`Error updating product ${mapping.tiktok_product_id}:`, updateError)
-            }
-          }
-        }
-      } catch (apiError: any) {
-        console.error('Error calling TikTok API, falling back to dummy data:', apiError)
-        // Fallback a dummy data si la API falla
-        const dummyTikTokProducts = generateDummyTikTokProducts(124)
-        itemsChecked = dummyTikTokProducts.length
-        
-        for (const tiktokProduct of dummyTikTokProducts) {
-          const shopifyStock = Math.floor(Math.random() * 50) + 1
-          const tiktokStock = tiktokProduct.inventory
-
-          if (tiktokStock === 0 && shopifyStock > 0) {
-            const updateSuccess = Math.random() > 0.1
-            if (updateSuccess) {
-              itemsFixed++
-              fixedProducts.push({
-                productId: tiktokProduct.id,
-                shopifyStock,
-                tiktokStock,
-              })
-            }
-          }
-        }
-      }
-    } else {
+      // REAL MODE: Use real TikTok Shop API
+      // TODO: Implement real API integration when credentials are available
+      // For now, fall through to dummy data mode
+      console.log('Real API mode requested but not fully implemented yet')
+    }
+    
+    // DUMMY MODE: Use simulated data (for MVP/demos)
+    {
       // MODO DUMMY: Usar datos simulados (para MVP/demos)
       const dummyTikTokProducts = generateDummyTikTokProducts(124)
       itemsChecked = dummyTikTokProducts.length

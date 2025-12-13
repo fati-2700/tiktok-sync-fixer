@@ -40,7 +40,7 @@ export default function DashboardPage() {
   const { user, isLoaded: userLoaded } = useUser()
   const { toast } = useToast()
   
-  // Crear cliente de Supabase con service role para operaciones
+  // Create Supabase client
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL || '',
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -52,10 +52,10 @@ export default function DashboardPage() {
   const [syncLogs, setSyncLogs] = useState<SyncLog[]>([])
   const [tiktokConnected, setTiktokConnected] = useState(false)
   
-  // Datos del usuario desde Clerk
-  const firstName = user?.firstName || user?.emailAddresses[0]?.emailAddress?.split('@')[0] || "Usuario"
-  const plan = "Starter" // TODO: Obtener del perfil en Supabase
-  const nextRenewal = "15 de Enero, 2024" // TODO: Obtener del perfil en Supabase
+  // User data from Clerk
+  const firstName = user?.firstName || user?.emailAddresses[0]?.emailAddress?.split('@')[0] || "User"
+  const plan = "Starter" // TODO: Get from Supabase profile
+  const nextRenewal = "January 15, 2024" // TODO: Get from Supabase profile
   
   const handleSync = async () => {
     setIsSyncing(true)
@@ -70,26 +70,26 @@ export default function DashboardPage() {
       if (response.ok) {
         const data = await response.json()
         
-        // Actualizar KPIs en tiempo real
+        // Update KPIs in real-time
         setLastSync(data.timestamp)
         setProductsFixed(data.items_fixed)
         
-        // Mostrar notificación de éxito
+        // Show success notification
         toast({
-          title: 'Sincronización completada',
-          description: `${data.items_fixed} productos reparados de ${data.items_checked} verificados`,
+          title: 'Sync completed',
+          description: `${data.items_fixed} products fixed out of ${data.items_checked} checked`,
         })
 
-        // Recargar logs de sincronización
+        // Reload sync logs
         await loadSyncLogs()
       } else {
         const error = await response.json()
-        throw new Error(error.error || 'Error en la sincronización')
+        throw new Error(error.error || 'Sync error')
       }
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.message || 'Error al sincronizar',
+        description: error.message || 'Error syncing',
         variant: 'destructive',
       })
     } finally {
@@ -101,7 +101,7 @@ export default function DashboardPage() {
     try {
       if (!user || !user.id) {
         console.log('No user found, using demo data')
-        // Usar datos demo si no hay usuario
+        // Use demo data if no user
         setSyncLogs([
           { id: '1', time: '14:30', store: 'shop-1', products: 124, fixed: 7, status: '✅', created_at: new Date().toISOString() },
           { id: '2', time: '14:15', store: 'shop-1', products: 124, fixed: 0, status: '✅', created_at: new Date().toISOString() },
@@ -119,7 +119,7 @@ export default function DashboardPage() {
 
       if (logsError) {
         console.error('Error loading sync logs:', logsError)
-        // Usar datos demo si hay error
+        // Use demo data if error
         setSyncLogs([
           { id: '1', time: '14:30', store: 'shop-1', products: 124, fixed: 7, status: '✅', created_at: new Date().toISOString() },
         ])
@@ -129,7 +129,7 @@ export default function DashboardPage() {
       if (logsData && logsData.length > 0) {
         setSyncLogs(logsData.map(log => ({
           id: log.id,
-          time: new Date(log.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+          time: new Date(log.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           store: log.tiktok_shop_id,
           products: log.items_synced,
           fixed: log.items_fixed,
@@ -141,7 +141,7 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Error loading sync logs:', error)
-      // En caso de error, usar datos demo para que la app funcione
+      // In case of error, use demo data so app works
       setSyncLogs([
         { id: '1', time: '14:30', store: 'shop-1', products: 124, fixed: 7, status: '✅', created_at: new Date().toISOString() },
       ])
@@ -220,7 +220,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando dashboard...</p>
+          <p className="text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     )
@@ -280,10 +280,10 @@ export default function DashboardPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-2xl">
-              Hola {firstName}! 👋
+              Hello {firstName}! 👋
             </CardTitle>
             <CardDescription>
-              Plan: {plan} | Próxima renovación: {nextRenewal}
+              Plan: {plan} | Next renewal: {nextRenewal}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -293,7 +293,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Últimos Sync
+                Last Sync
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -302,10 +302,10 @@ export default function DashboardPage() {
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {lastSync 
-                  ? `hace ${Math.floor((Date.now() - new Date(lastSync).getTime()) / 60000)} minutos`
+                  ? `${Math.floor((Date.now() - new Date(lastSync).getTime()) / 60000)} minutes ago`
                   : syncLogs.length > 0 && syncLogs[0].created_at
-                    ? new Date(syncLogs[0].created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
-                    : 'Nunca'
+                    ? new Date(syncLogs[0].created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+                    : 'Never'
                 }
               </p>
             </CardContent>
@@ -314,13 +314,13 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Productos Reparados
+                Products Fixed
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{productsFixed || (syncLogs.length > 0 ? syncLogs[0].fixed : 0)}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {lastSync ? 'esta sincronización' : 'este mes'}
+                {lastSync ? 'this sync' : 'this month'}
               </p>
             </CardContent>
           </Card>
@@ -328,12 +328,12 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Ventas Recuperadas
+                Recovered Sales
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">€2,340</div>
-              <p className="text-xs text-muted-foreground mt-1">estimado</p>
+              <div className="text-2xl font-bold">$2,340</div>
+              <p className="text-xs text-muted-foreground mt-1">estimated</p>
             </CardContent>
           </Card>
         </div>
@@ -346,24 +346,24 @@ export default function DashboardPage() {
             onClick={handleSync}
             disabled={isSyncing}
           >
-            {isSyncing ? "⏳ Sincronizando..." : "🔄 Forzar Sincronización AHORA"}
+            {isSyncing ? "⏳ Syncing..." : "🔄 Force Sync NOW"}
           </Button>
         </div>
 
-        {/* CTA si no está conectado (opcional para MVP) */}
+        {/* CTA if not connected (optional for MVP) */}
         {!tiktokConnected && (
           <Card className="mb-8 border-primary">
             <CardHeader>
-              <CardTitle>Conectar TikTok Shop (Opcional)</CardTitle>
+              <CardTitle>Connect TikTok Shop (Optional)</CardTitle>
               <CardDescription>
-                Para sincronización real, conecta tu cuenta de TikTok Shop. 
-                Por ahora, puedes usar el modo demo con datos simulados.
+                For real synchronization, connect your TikTok Shop account. 
+                For now, you can use demo mode with simulated data.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Link href="/integrations">
                 <Button variant="outline" className="w-full md:w-auto">
-                  Conectar TikTok Shop
+                  Connect TikTok Shop
                 </Button>
               </Link>
             </CardContent>
@@ -373,20 +373,20 @@ export default function DashboardPage() {
         {/* Logs Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Últimos Syncs</CardTitle>
+            <CardTitle>Recent Syncs</CardTitle>
             <CardDescription>
-              Historial de las últimas 10 sincronizaciones
+              History of the last 10 synchronizations
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Hora</TableHead>
-                  <TableHead>Tienda</TableHead>
-                  <TableHead>Productos</TableHead>
-                  <TableHead>Reparados</TableHead>
-                  <TableHead>Estado</TableHead>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Store</TableHead>
+                  <TableHead>Products</TableHead>
+                  <TableHead>Fixed</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -407,4 +407,3 @@ export default function DashboardPage() {
     </div>
   )
 }
-

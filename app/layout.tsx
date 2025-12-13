@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "TikTok Sync Fixer",
-  description: "Sincronización de inventario entre Shopify y TikTok Shop",
+  description: "Sync inventory between Shopify and TikTok Shop",
 };
 
 export default function RootLayout({
@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="es">
+      <html lang="en">
         <body className={inter.className}>
           <ToastProvider>
             {children}

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useUser } from "@clerk/nextjs"
 import { createClient } from "@supabase/supabase-js"
 import { formatDistanceToNow } from "date-fns"
-import { es } from "date-fns/locale/es"
+import { enUS } from "date-fns/locale/en-US"
 
 export default function IntegrationsPage() {
   const router = useRouter()
@@ -34,7 +34,7 @@ export default function IntegrationsPage() {
 
       setUserId(user.id)
 
-      // Obtener perfil del usuario
+      // Get user profile
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('tiktok_shop_connected, tiktok_shop_id, tiktok_access_token')
@@ -47,9 +47,9 @@ export default function IntegrationsPage() {
 
       if (profile) {
         setIsConnected(profile.tiktok_shop_connected || false)
-        setShopName(profile.tiktok_shop_id || 'Mi Tienda TikTok')
+        setShopName(profile.tiktok_shop_id || 'My TikTok Shop')
         
-        // Obtener último sync
+        // Get last sync
         if (profile.tiktok_shop_id) {
           const { data: lastSyncData } = await supabase
             .from('sync_logs')
@@ -81,7 +81,7 @@ export default function IntegrationsPage() {
 
     setIsConnecting(true)
     try {
-      // Llamar al endpoint API para conectar (fake)
+      // Call API endpoint to connect (fake)
       const response = await fetch('/api/integrations/tiktok/connect', {
         method: 'POST',
         headers: {
@@ -90,17 +90,17 @@ export default function IntegrationsPage() {
       })
 
       if (response.ok) {
-        // Recargar estado
+        // Reload status
         await loadConnectionStatus()
         router.refresh()
       } else {
         const error = await response.json()
         console.error('Error connecting:', error)
-        alert('Error al conectar. Por favor intenta de nuevo.')
+        alert('Error connecting. Please try again.')
       }
     } catch (error) {
       console.error('Error connecting:', error)
-      alert('Error al conectar. Por favor intenta de nuevo.')
+      alert('Error connecting. Please try again.')
     } finally {
       setIsConnecting(false)
     }
@@ -109,7 +109,7 @@ export default function IntegrationsPage() {
   const handleDisconnect = async () => {
     if (!userId) return
 
-    if (!confirm('¿Estás seguro de que quieres desconectar TikTok Shop?')) {
+    if (!confirm('Are you sure you want to disconnect TikTok Shop?')) {
       return
     }
 
@@ -128,11 +128,11 @@ export default function IntegrationsPage() {
       } else {
         const error = await response.json()
         console.error('Error disconnecting:', error)
-        alert('Error al desconectar. Por favor intenta de nuevo.')
+        alert('Error disconnecting. Please try again.')
       }
     } catch (error) {
       console.error('Error disconnecting:', error)
-      alert('Error al desconectar. Por favor intenta de nuevo.')
+      alert('Error disconnecting. Please try again.')
     } finally {
       setIsDisconnecting(false)
     }
@@ -142,7 +142,7 @@ export default function IntegrationsPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Cargando...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     )
@@ -173,25 +173,25 @@ export default function IntegrationsPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-4xl font-bold mb-8">Conectar TikTok Shop</h1>
+        <h1 className="text-4xl font-bold mb-8">Connect TikTok Shop</h1>
 
         {!isConnected ? (
           <>
             {/* Instruction Card */}
             <Card className="mb-8">
               <CardHeader>
-                <CardTitle>Instrucciones</CardTitle>
+                <CardTitle>Instructions</CardTitle>
               </CardHeader>
               <CardContent>
                 <ol className="space-y-4 list-decimal list-inside">
                   <li className="text-base">
-                    Haz clic en el botón de abajo
+                    Click the button below
                   </li>
                   <li className="text-base">
-                    Autoriza nuestra app a acceder a tu TikTok Shop
+                    Authorize our app to access your TikTok Shop
                   </li>
                   <li className="text-base">
-                    Nosotros habremos acceso a inventario para sincronizar
+                    We will have access to inventory to sync
                   </li>
                 </ol>
               </CardContent>
@@ -205,7 +205,7 @@ export default function IntegrationsPage() {
                 onClick={handleConnect}
                 disabled={isConnecting}
               >
-                {isConnecting ? "Conectando..." : "Conectar con TikTok Shop OAuth"}
+                {isConnecting ? "Connecting..." : "Connect with TikTok Shop OAuth"}
               </Button>
             </div>
           </>
@@ -214,23 +214,23 @@ export default function IntegrationsPage() {
             {/* Connected Status Card */}
             <Card className="mb-8 border-primary">
               <CardHeader>
-                <CardTitle className="text-green-600">✓ Conectado</CardTitle>
+                <CardTitle className="text-green-600">✓ Connected</CardTitle>
                 <CardDescription>
-                  Tu cuenta de TikTok Shop está conectada y lista para sincronizar
+                  Your TikTok Shop account is connected and ready to sync
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Conectado a:</p>
+                  <p className="text-sm text-muted-foreground mb-1">Connected to:</p>
                   <p className="text-lg font-semibold">{shopName}</p>
                 </div>
                 {lastSync && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-1">Último sync:</p>
+                    <p className="text-sm text-muted-foreground mb-1">Last sync:</p>
                     <p className="text-lg font-semibold">
                       {formatDistanceToNow(new Date(lastSync), {
                         addSuffix: true,
-                        locale: es,
+                        locale: enUS,
                       })}
                     </p>
                   </div>
@@ -241,7 +241,7 @@ export default function IntegrationsPage() {
                     onClick={handleDisconnect}
                     disabled={isDisconnecting}
                   >
-                    {isDisconnecting ? "Desconectando..." : "Desconectar"}
+                    {isDisconnecting ? "Disconnecting..." : "Disconnect"}
                   </Button>
                 </div>
               </CardContent>
@@ -252,4 +252,3 @@ export default function IntegrationsPage() {
     </div>
   )
 }
-
