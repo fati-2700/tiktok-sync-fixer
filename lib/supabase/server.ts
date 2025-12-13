@@ -7,12 +7,27 @@ export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+  // Si no hay variables de Supabase, retornar un cliente mock que no falla
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Missing Supabase environment variables. Please check your .env.local file.\n' +
-      'Required: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY\n' +
-      'Get them from: https://supabase.com/dashboard/project/_/settings/api\n' +
-      '⚠️ IMPORTANTE: Reinicia el servidor después de agregar variables de entorno!'
+    console.warn(
+      '⚠️ Supabase no está configurado. Usando cliente mock.\n' +
+      'Para funcionalidad completa, agrega NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY'
+    )
+    
+    // Retornar un cliente mock que no falla pero no hace nada
+    return createServerClient(
+      'https://placeholder.supabase.co',
+      'placeholder-key',
+      {
+        cookies: {
+          getAll() {
+            return []
+          },
+          setAll() {
+            // No hacer nada
+          },
+        },
+      }
     )
   }
 

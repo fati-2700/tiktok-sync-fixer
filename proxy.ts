@@ -10,16 +10,28 @@ const isPublicRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, request) => {
-  // Proteger todas las rutas excepto las públicas
-  if (!isPublicRoute(request)) {
-    const { userId } = await auth()
-    
-    if (!userId) {
-      // Redirigir a sign-in si no está autenticado
-      const signInUrl = new URL('/sign-in', request.url)
-      signInUrl.searchParams.set('redirect_url', request.url)
-      return NextResponse.redirect(signInUrl)
+  try {
+    // Proteger todas las rutas excepto las públicas
+    if (!isPublicRoute(request)) {
+      const { userId } = await auth()
+      
+      if (!userId) {
+        // Redirigir a sign-in si no está autenticado
+        const signInUrl = new URL('/sign-in', request.url)
+        signInUrl.searchParams.set('redirect_url', request.url)
+        return NextResponse.redirect(signInUrl)
+      }
     }
+  } catch (error) {
+    // Si hay un error con Clerk (por ejemplo, variables no configuradas),
+    // permitir acceso a rutas públicas
+    console.error('Error in Clerk middleware:', error)
+    if (isPublicRoute(request)) {
+      return NextResponse.next()
+    }
+    // Para rutas protegidas, redirigir a sign-in
+    const signInUrl = new URL('/sign-in', request.url)
+    return NextResponse.redirect(signInUrl)
   }
 })
 
