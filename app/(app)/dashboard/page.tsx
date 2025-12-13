@@ -344,24 +344,25 @@ export default function DashboardPage() {
             size="lg" 
             className="w-full md:w-auto text-lg px-8"
             onClick={handleSync}
-            disabled={isSyncing || !tiktokConnected}
+            disabled={isSyncing}
           >
             {isSyncing ? "⏳ Sincronizando..." : "🔄 Forzar Sincronización AHORA"}
           </Button>
         </div>
 
-        {/* CTA si no está conectado */}
+        {/* CTA si no está conectado (opcional para MVP) */}
         {!tiktokConnected && (
           <Card className="mb-8 border-primary">
             <CardHeader>
-              <CardTitle>Conectar TikTok Shop</CardTitle>
+              <CardTitle>Conectar TikTok Shop (Opcional)</CardTitle>
               <CardDescription>
-                Conecta tu cuenta de TikTok Shop para comenzar a sincronizar inventario
+                Para sincronización real, conecta tu cuenta de TikTok Shop. 
+                Por ahora, puedes usar el modo demo con datos simulados.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Link href="/integrations">
-                <Button className="w-full md:w-auto">
+                <Button variant="outline" className="w-full md:w-auto">
                   Conectar TikTok Shop
                 </Button>
               </Link>

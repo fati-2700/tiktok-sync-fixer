@@ -75,6 +75,9 @@ $$ language 'plpgsql';
 -- ============================================
 -- TRIGGERS para updated_at
 -- ============================================
+-- Eliminar trigger si existe antes de crearlo (para que el script sea idempotente)
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+
 CREATE TRIGGER update_profiles_updated_at
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW
@@ -83,120 +86,33 @@ CREATE TRIGGER update_profiles_updated_at
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.sync_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.tiktok_products ENABLE ROW LEVEL SECURITY;
+-- NOTA: RLS está deshabilitado porque usamos Clerk para autenticación
+-- y el código usa SUPABASE_SERVICE_ROLE_KEY que bypassa RLS.
+-- En producción, considera implementar políticas RLS personalizadas
+-- que funcionen con Clerk o usar Supabase Auth en lugar de Clerk.
+
+-- Deshabilitar RLS temporalmente para MVP
+ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sync_logs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tiktok_products DISABLE ROW LEVEL SECURITY;
 
 -- ============================================
--- POLÍTICAS RLS para profiles
+-- ROW LEVEL SECURITY (RLS)
 -- ============================================
--- Los usuarios solo pueden ver su propio perfil
-CREATE POLICY "Users can view own profile"
-  ON public.profiles
-  FOR SELECT
-  USING (auth.uid() = id);
+-- NOTA: RLS está deshabilitado porque usamos Clerk para autenticación
+-- y el código usa SUPABASE_SERVICE_ROLE_KEY que bypassa RLS.
+-- En producción, considera implementar políticas RLS personalizadas
+-- que funcionen con Clerk o usar Supabase Auth en lugar de Clerk.
 
--- Los usuarios solo pueden actualizar su propio perfil
-CREATE POLICY "Users can update own profile"
-  ON public.profiles
-  FOR UPDATE
-  USING (auth.uid() = id);
+-- Deshabilitar RLS temporalmente para MVP
+ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sync_logs DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tiktok_products DISABLE ROW LEVEL SECURITY;
 
--- Permitir inserción automática cuando se crea un usuario en auth.users
-CREATE POLICY "Users can insert own profile"
-  ON public.profiles
-  FOR INSERT
-  WITH CHECK (auth.uid() = id);
-
--- ============================================
--- POLÍTICAS RLS para sync_logs
--- ============================================
--- Los usuarios solo pueden ver sus propios logs de sincronización
-CREATE POLICY "Users can view own sync logs"
-  ON public.sync_logs
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = sync_logs.user_id
-      AND profiles.id = auth.uid()
-    )
-  );
-
--- Los usuarios solo pueden insertar sus propios logs
-CREATE POLICY "Users can insert own sync logs"
-  ON public.sync_logs
-  FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = sync_logs.user_id
-      AND profiles.id = auth.uid()
-    )
-  );
-
--- Los usuarios solo pueden actualizar sus propios logs
-CREATE POLICY "Users can update own sync logs"
-  ON public.sync_logs
-  FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = sync_logs.user_id
-      AND profiles.id = auth.uid()
-    )
-  );
-
--- ============================================
--- POLÍTICAS RLS para tiktok_products
--- ============================================
--- Los usuarios solo pueden ver sus propios productos
-CREATE POLICY "Users can view own products"
-  ON public.tiktok_products
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = tiktok_products.user_id
-      AND profiles.id = auth.uid()
-    )
-  );
-
--- Los usuarios solo pueden insertar sus propios productos
-CREATE POLICY "Users can insert own products"
-  ON public.tiktok_products
-  FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = tiktok_products.user_id
-      AND profiles.id = auth.uid()
-    )
-  );
-
--- Los usuarios solo pueden actualizar sus propios productos
-CREATE POLICY "Users can update own products"
-  ON public.tiktok_products
-  FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = tiktok_products.user_id
-      AND profiles.id = auth.uid()
-    )
-  );
-
--- Los usuarios solo pueden eliminar sus propios productos
-CREATE POLICY "Users can delete own products"
-  ON public.tiktok_products
-  FOR DELETE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE profiles.id = tiktok_products.user_id
-      AND profiles.id = auth.uid()
-    )
-  );
+-- Las políticas RLS están deshabilitadas porque:
+-- 1. Usamos Clerk para autenticación (no Supabase Auth)
+-- 2. El código usa SUPABASE_SERVICE_ROLE_KEY que bypassa RLS
+-- 3. La seguridad se maneja a nivel de aplicación (verificación de userId en el código)
 
 -- ============================================
 -- NOTA: Los perfiles se crean automáticamente vía webhook de Clerk

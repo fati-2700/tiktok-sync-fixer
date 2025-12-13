@@ -44,3 +44,12 @@ export interface TikTokSKU {
   // Agregar más campos según la documentación de TikTok Shop API
 }
 
+export interface TikTokInventoryResponse {
+  inventory?: {
+    available_stock: number;
+    reserved_stock?: number;
+  };
+  product_id?: string;
+  sku_id?: string;
+}
+

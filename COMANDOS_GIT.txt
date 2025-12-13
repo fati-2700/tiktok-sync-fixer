@@ -1,0 +1,18 @@
+COMANDOS PARA HACER PUSH A GITHUB
+====================================
+
+Ejecuta estos comandos en tu terminal (PowerShell o Git Bash):
+
+1. Agregar cambios:
+   git add .
+
+2. Hacer commit:
+   git commit -m "Fix: Permitir sincronización sin conexión TikTok (modo dummy data)"
+
+3. Hacer push:
+   git push origin main
+
+O ejecuta el script:
+- Windows (PowerShell): .\push-to-github.ps1
+- Linux/Mac (Bash): bash push-to-github.sh
+
